@@ -34,6 +34,14 @@ async function run() {
             res.send(products);
         });
 
+        app.get('/product/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = {_id: ObjectId(id)
+            };
+            const product = await productsCollection.findOne(query);
+            res.send(product);
+        });
+
        
 
 
@@ -48,7 +56,7 @@ run().catch(console.dir);
 
 
 app.get('/', async (req, res) => {
-    res.send('Running fruits server');
+    res.send('Running power tools server');
 });
 
 app.listen(port, () => {
