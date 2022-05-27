@@ -1,6 +1,5 @@
 const express = require('express');
 const cors = require('cors');
-const stripe = require('stripe')(process.env.STRIPE_SECRET)
 
 const {
     MongoClient,
@@ -8,6 +7,7 @@ const {
     ObjectId
 } = require('mongodb');
 require('dotenv').config();
+const stripe = require('stripe')(process.env.STRIPE_SECRET)
 const port = process.env.PORT || 5000;
 
 const app = express();
@@ -50,6 +50,35 @@ async function run() {
             res.send(product);
         });
 
+          // get single email ordered product
+        app.get('/orders', async (req, res) => {
+            const email = req.query.email
+            const query = { email: email }
+            const result = await ordersCollection.find(query).toArray()
+            res.send(result)
+        })
+
+        app.delete('/delete-order/:id', async (req, res) => {
+            const result = await orderCollection.deleteOne({ _id: ObjectId(req.params.id) })
+            res.json(result)
+        })
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        // payment 
+
         app.get('/payment/:id', async (req, res) => {
             const id = req.params.id;
             const query = {_id: ObjectId(id)};
@@ -67,7 +96,7 @@ async function run() {
                     payment: payment
                 }
             }
-            const result = await orderCollection.updateOne(filter, updateDoc)
+            const result = await ordersCollection.updateOne(filter, updateDoc)
             res.json(result)
         })
        
