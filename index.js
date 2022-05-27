@@ -135,6 +135,17 @@ async function run() {
             const result = await userCollection.insertOne(user)
             res.json(result)
         })
+        //get admin user 
+        app.get('/users/:email', async (req, res) => {
+            const email = req.params.email
+            const query = { email: email }
+            const user = await userCollection.findOne(query)
+            let isAdmin = false
+            if (user?.role === 'admin') {
+                isAdmin = true;
+            }
+            res.json({ admin: isAdmin })
+        })
 
 
         // payment 
