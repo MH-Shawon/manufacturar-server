@@ -1,5 +1,7 @@
 const express = require('express');
 const cors = require('cors');
+const stripe = require('stripe')(process.env.STRIPE_SECRET)
+
 const {
     MongoClient,
     ServerApiVersion,
@@ -26,6 +28,7 @@ async function run() {
     try {
         await client.connect();
         const productsCollection = client.db('powerTools').collection('products');
+        const ordersCollection = client.db('powerTools').collection('orders');
 
         app.get('/products', async (req, res) => {
             const query = {};
@@ -42,7 +45,43 @@ async function run() {
             res.send(product);
         });
 
+        app.post('/orders', async (req, res) => {
+            const product = await ordersCollection.insertOne(req.body);
+            res.send(product);
+        });
+
+        app.get('/payment/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = {_id: ObjectId(id)};
+            const product = await ordersCollection.findOne(query);
+            res.json(product);
+        });  
+        
+        // update order after payment successfull
+        app.put('/payment/:id', async (req, res) => {
+            const id = req.params.id;
+            const payment = req.body;
+            const filter = { _id: ObjectId(id) }
+            const updateDoc = {
+                $set: {
+                    payment: payment
+                }
+            }
+            const result = await orderCollection.updateOne(filter, updateDoc)
+            res.json(result)
+        })
        
+         // payment method setup
+         app.post('/create-payment-intent', async (req, res) => {
+            const paymentInfo = req.body
+            const amount = paymentInfo.price * 100
+            const paymentIntent = await stripe.paymentIntents.create({
+                currency: 'usd',
+                amount: amount,
+                payment_method_types: ['card']
+            })
+            res.json({ clientSecret: paymentIntent.client_secret })
+        })
 
 
 
