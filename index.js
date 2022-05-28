@@ -50,7 +50,7 @@ async function run() {
 
             app.put('/product/:id', async (req, res) => {
             const id = req.params.id;
-            const body = req.body;
+            const body = req.body.quantity;
             const filter = {
                 _id: ObjectId(id)
             }
